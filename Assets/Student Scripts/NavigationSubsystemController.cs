@@ -8,7 +8,7 @@ using Sandbox;
 public class NavigationSubsystemController
 {
     // This is needed to read data from the sensor subsystems
-    public SensorSubsystemController;
+    public SensorSubsystemController sensorSubsystemController;
 
     List<string> visitedGalaxies = new List<string>();
     List<WarpGate> warpGatesInCurrentGalaxy = new List<WarpGate>();
