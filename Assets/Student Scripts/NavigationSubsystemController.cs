@@ -7,6 +7,8 @@ using Sandbox;
 
 public class NavigationSubsystemController
 {
+    // This is needed to read data from the sensor subsystems
+    public SensorSubsystemController;
 
     List<string> visitedGalaxies = new List<string>();
     List<WarpGate> warpGatesInCurrentGalaxy = new List<WarpGate>();
@@ -15,16 +17,22 @@ public class NavigationSubsystemController
     public void NavigationUpdate(SubsystemReferences SystemReferences, GalaxyMapData galaxyMapData)
     {
         Debug.Log(galaxyMapData.nodeData[1].galacticPosition);
+        destinationWarpGate = GetDestinationWarpGate();
+    }
 
+    public WarpGate GetDestinationWarpGate() 
+    {
         //warpGatesInCurrentGalaxy = SystemReferences.Sensors.warpGates;
-        
+
         foreach (WarpGate warpGate in warpGatesInCurrentGalaxy)
         {
             if (!visitedGalaxies.Contains(warpGate.name))
             {
-                destinationWarpGate = warpGate;
-                break;
+                return warpGate;
             }
         }
+        // Return null if warpGatesInCurrentGalaxy is empty, or if visitedGalaxies
+        // contains all warp gates in current galaxy.
+        return null;
     }
 }
