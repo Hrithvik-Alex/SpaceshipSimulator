@@ -21,7 +21,8 @@ public class SensorSubsystemController
     }
 
 
-    public List<WarpDetection> GWIData = new List<WarpDetection>();
+    public List<WarpDetection> GWIPlanetData = new List<WarpDetection>();
+    public List<WarpDetection> GWIWarpData = new List<WarpDetection>();
 
     public void SensorsUpdate(SubsystemReferences subsysRef, ShipSensors Data)
     {
@@ -36,7 +37,7 @@ public class SensorSubsystemController
         Vector2 vector;
 
 
-   for(int i = 0; i<Data.GWInterferometer.Count; i++)
+        for (int i = 0; i < Data.GWInterferometer.Count; i++)
 
         {
             warpgateDest = Data.GWInterferometer[i].warpGateDestination;
@@ -52,7 +53,14 @@ public class SensorSubsystemController
 
             vector = new Vector2((float)distX, (float)distY);
 
-            GWIData.Add(new WarpDetection(vector, signature));
-        }
+            if (signature == GravitySignature.Planetoid)
+            {
+                GWIPlanetData.Add(new WarpDetection(vector, signature));
+            }
+            else if(signature == GravitySignature.WarpGate){
+                GWIWarpData.Add(new WarpDetection(vector, signature));
+            }
+
+        }      
     }
 }
