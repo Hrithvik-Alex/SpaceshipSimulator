@@ -6,19 +6,6 @@ using Sandbox;
 
 public class SensorSubsystemController
 {
-    //Structure
-    public struct PlanetStruct
-    {
-        public Vector2 vector;
-
-        public GravitySignature finalSignature; 
-
-        public PlanetStruct(Vector2 vector, GravitySignature signature)
-        {
-            this.vector = vector;
-            finalSignature = signature;
-        }
-    }
 
     public struct WarpStruct
     {
@@ -34,8 +21,6 @@ public class SensorSubsystemController
         }
     }
 
-
-    public List<PlanetStruct> GWIPlanetData = new List<PlanetStruct>();
     public List<WarpStruct> GWIWarpData = new List<WarpStruct>();
 
     public void SensorsUpdate(SubsystemReferences subsysRef, ShipSensors Data)
@@ -44,6 +29,7 @@ public class SensorSubsystemController
         double angle;
         float waveAmplitude;
         GravitySignature signature;
+        SpaceMaterial[] material = { };
 
         //Good data
         float distance;
@@ -53,6 +39,7 @@ public class SensorSubsystemController
 
         for (int i = 0; i < Data.GWInterferometer.Count; i++)
         {
+
             warpgateDest = Data.GWInterferometer[i].warpGateDestination;
             angle = (double)Data.GWInterferometer[i].angle;
             waveAmplitude = Data.GWInterferometer[i].waveAmplitude;
@@ -66,14 +53,10 @@ public class SensorSubsystemController
 
             vector = new Vector2((float)distX, (float)distY);
 
-            if (signature == GravitySignature.Planetoid)
-            {
-                GWIPlanetData.Add(new PlanetStruct(vector, signature));
-            }
-            else if(signature == GravitySignature.WarpGate){
+            if(signature == GravitySignature.WarpGate){
                 GWIWarpData.Add(new WarpStruct(vector, signature, warpgateDest));
             }
 
-        }      
+        }
     }
 }
