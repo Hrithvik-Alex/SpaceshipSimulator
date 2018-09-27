@@ -2,13 +2,51 @@
 using System.Collections.Generic;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
+using UnityEngine;
 using Sandbox;
 
 public class PropulsionSubsystemController
 {
-    public void PropulsionUpdate(SubsystemReferences subsystemReferences, ThrusterControls thrusterControls)
+
+
+
+
+
+
+
+
+
+
+
+
+  private void rotateLeft(ThrusterControls thrusterControls, float value)
+  {
+    thrusterControls.starboardBowThrust = value;
+    thrusterControls.portAftThrust = value;
+  }
+
+  private void rotateRight(ThrusterControls thrusterControls, float value)
+  {
+    thrusterControls.portBowThrust = value;
+    thrusterControls.starboardAftThrust = value;
+  }
+
+private bool startRotate = true;
+Vector3 startPos;
+
+  public void PropulsionUpdate(SubsystemReferences subsystemReferences, ThrusterControls thrusterControls)
     {
-        string currentSystem = subsystemReferences.currentGalaxyMapNodeName;
+        if(startRotate){
+            startRotate = false;
+            startPos = subsystemReferences.forward;
+        }
+        rotateLeft(thrusterControls, 50);
+
+        if(subsystemReferences.forward > startPos){
+            UnityEngine.Debug.Log(Time.frameCount);
+        }
+
+        /*string currentSystem = subsystemReferences.currentGalaxyMapNodeName;
         UnityEngine.Debug.Log(currentSystem);
         if (currentSystem == "Sol")
         {
@@ -33,6 +71,6 @@ public class PropulsionSubsystemController
             thrusterControls.starboardBowThrust = 0;
             thrusterControls.portAftThrust = 0;
             thrusterControls.starboardAftThrust = 0;
-        }
+        }*/
     }
 }
