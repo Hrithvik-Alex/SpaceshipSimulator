@@ -36,8 +36,7 @@ public class SensorSubsystemController
         Vector2 vector;
 
 
-   for(int i = 0; i<Data.GWInterferometer.Count; i++)
-
+       for(int i = 0; i<Data.GWInterferometer.Count; i++)
         {
             warpgateDest = Data.GWInterferometer[i].warpGateDestination;
             angle = (double)Data.GWInterferometer[i].angle;
