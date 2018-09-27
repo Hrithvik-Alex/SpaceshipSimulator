@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Vector2 = UnityEngine.Vector2;
-using Vector3 = UnityEngine.Vector3;
 using UnityEngine;
 using Sandbox;
 
@@ -11,6 +9,51 @@ public class PropulsionSubsystemController
 
 
 
+    private void rotateToVector2(Vector2 direction, Vector2 pos) 
+    {
+        double dirtheta = Math.Atan((double)direction.y/(double)direction.x);
+        double postheta = Math.Atan((double)direction.y/(double)direction.x);
+        double deltatheta = Math.Abs(dirtheta - postheta);
+
+        // If dirtheta is less than pos, rotate right. lr 0 is right
+        // If dirtheta is greater than pos, rotate left. lr 1 is left
+        int lr = -1;
+        if (dirtheta < postheta)
+        {
+            lr = 0;
+        }
+        else if (dirtheta > postheta)
+        {
+            lr = 1;
+        }
+
+        // While the spaceship has not yet rotated through half the target distance
+        // continue to accelerate
+        while(Math.Abs(dirtheta-postheta)>deltatheta) 
+        {
+            if (lr == 0)
+            {
+                //Rotate right
+            }
+            else if (lr == 1)
+            {
+                //Rotate left
+            }
+        }
+
+        // Decelerate once the halfway point is passed
+        while (Math.Abs(dirtheta - postheta) < deltatheta  && dirtheta != postheta)
+        {
+            if (lr == 0)
+            {
+                //Rotate left
+            }
+            else if (lr == 1)
+            {
+                //Rotate right
+            }
+        }
+    }
 
 
 
@@ -18,23 +61,22 @@ public class PropulsionSubsystemController
 
 
 
+    private void rotateLeft(ThrusterControls thrusterControls, float value)
+    {
+        thrusterControls.starboardBowThrust = value;
+        thrusterControls.portAftThrust = value;
+    }
 
-  private void rotateLeft(ThrusterControls thrusterControls, float value)
-  {
-    thrusterControls.starboardBowThrust = value;
-    thrusterControls.portAftThrust = value;
-  }
+    private void rotateRight(ThrusterControls thrusterControls, float value)
+    {
+        thrusterControls.portBowThrust = value;
+        thrusterControls.starboardAftThrust = value;
+    }
 
-  private void rotateRight(ThrusterControls thrusterControls, float value)
-  {
-    thrusterControls.portBowThrust = value;
-    thrusterControls.starboardAftThrust = value;
-  }
+    private bool startRotate = true;
+    Vector3 startPos;
 
-private bool startRotate = true;
-Vector3 startPos;
-
-  public void PropulsionUpdate(SubsystemReferences subsystemReferences, ThrusterControls thrusterControls)
+    public void PropulsionUpdate(SubsystemReferences subsystemReferences, ThrusterControls thrusterControls)
     {
         if(startRotate){
             startRotate = false;
