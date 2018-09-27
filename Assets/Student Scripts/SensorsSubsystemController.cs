@@ -7,22 +7,36 @@ using Sandbox;
 public class SensorSubsystemController
 {
     //Structure
-    public struct WarpDetection
+    public struct PlanetStruct
     {
         public Vector2 vector;
 
         public GravitySignature finalSignature; 
 
-        public WarpDetection(Vector2 vector, GravitySignature signature)
+        public PlanetStruct(Vector2 vector, GravitySignature signature)
         {
             this.vector = vector;
             finalSignature = signature;
         }
     }
 
+    public struct WarpStruct
+    {
+        public Vector2 vector;
+        public String warpDest;
+        public GravitySignature finalSignature;
 
-    public List<WarpDetection> GWIPlanetData = new List<WarpDetection>();
-    public List<WarpDetection> GWIWarpData = new List<WarpDetection>();
+        public WarpStruct(Vector2 vector, GravitySignature signature, String dest)
+        {
+            this.warpDest = dest;
+            this.vector = vector;
+            finalSignature = signature;
+        }
+    }
+
+
+    public List<PlanetStruct> GWIPlanetData = new List<PlanetStruct>();
+    public List<WarpStruct> GWIWarpData = new List<WarpStruct>();
 
     public void SensorsUpdate(SubsystemReferences subsysRef, ShipSensors Data)
     {
@@ -55,10 +69,10 @@ public class SensorSubsystemController
 
             if (signature == GravitySignature.Planetoid)
             {
-                GWIPlanetData.Add(new WarpDetection(vector, signature));
+                GWIPlanetData.Add(new PlanetStruct(vector, signature));
             }
             else if(signature == GravitySignature.WarpGate){
-                GWIWarpData.Add(new WarpDetection(vector, signature));
+                GWIWarpData.Add(new WarpStruct(vector, signature, warpgateDest));
             }
 
         }      
