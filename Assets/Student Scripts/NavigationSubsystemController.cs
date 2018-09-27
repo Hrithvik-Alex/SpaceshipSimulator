@@ -8,31 +8,42 @@ using Sandbox;
 public class NavigationSubsystemController
 {
     // This is needed to read data from the sensor subsystems
-    public SensorSubsystemController;
+    public SensorSubsystemController sensorSubsystemController;
 
     List<string> visitedGalaxies = new List<string>();
-    List<WarpGate> warpGatesInCurrentGalaxy = new List<WarpGate>();
-    WarpGate destinationWarpGate;
+    List<SensorSubsystemController.WarpStruct> warpGatesInCurrentGalaxy = new List<SensorSubsystemController.WarpStruct>();
+
+    public SensorSubsystemController.WarpStruct destinationWarpGate;
 
     public void NavigationUpdate(SubsystemReferences SystemReferences, GalaxyMapData galaxyMapData)
     {
-        Debug.Log(galaxyMapData.nodeData[1].galacticPosition);
+        if (!visitedGalaxies.Contains(SystemReferences.currentGalaxyMapNodeName))
+        {
+            visitedGalaxies.Add(SystemReferences.currentGalaxyMapNodeName);
+        }
+
+        foreach (SensorSubsystemController.WarpStruct warpStruct in SystemReferences.Sensors.GWIWarpData)
+        {
+            warpGatesInCurrentGalaxy.Add(warpStruct);
+        }
+
         destinationWarpGate = GetDestinationWarpGate();
     }
-
-    public WarpGate GetDestinationWarpGate() 
+    
+    public SensorSubsystemController.WarpStruct GetDestinationWarpGate() 
     {
         //warpGatesInCurrentGalaxy = SystemReferences.Sensors.warpGates;
 
-        foreach (WarpGate warpGate in warpGatesInCurrentGalaxy)
+        foreach (SensorSubsystemController.WarpStruct warpGate in warpGatesInCurrentGalaxy)
         {
-            if (!visitedGalaxies.Contains(warpGate.name))
+            if (!visitedGalaxies.Contains(warpGate.warpDest))
             {
                 return warpGate;
             }
         }
         // Return null if warpGatesInCurrentGalaxy is empty, or if visitedGalaxies
         // contains all warp gates in current galaxy.
-        return null;
+
+        return new SensorSubsystemController.WarpStruct();
     }
 }

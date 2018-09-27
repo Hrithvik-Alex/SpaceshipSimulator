@@ -7,21 +7,36 @@ using Sandbox;
 public class SensorSubsystemController
 {
     //Structure
-    public struct WarpDetection
+    public struct PlanetStruct
     {
-        Vector2 vector;
+        public Vector2 vector;
 
-        GravitySignature finalSignature; 
+        public GravitySignature finalSignature; 
 
-        public WarpDetection(Vector2 vector, GravitySignature signature)
+        public PlanetStruct(Vector2 vector, GravitySignature signature)
         {
             this.vector = vector;
             finalSignature = signature;
         }
     }
 
+    public struct WarpStruct
+    {
+        public Vector2 vector;
+        public String warpDest;
+        public GravitySignature finalSignature;
 
-    public List<WarpDetection> GWIData = new List<WarpDetection>();
+        public WarpStruct(Vector2 vector, GravitySignature signature, String dest)
+        {
+            this.warpDest = dest;
+            this.vector = vector;
+            finalSignature = signature;
+        }
+    }
+
+
+    public List<PlanetStruct> GWIPlanetData = new List<PlanetStruct>();
+    public List<WarpStruct> GWIWarpData = new List<WarpStruct>();
 
     public struct EMSDetection
     {
@@ -102,7 +117,8 @@ public class SensorSubsystemController
         Vector2 vector;
 
 
-        for(int i = 0; i<Data.GWInterferometer.Count; i++)
+
+        for (int i = 0; i < Data.GWInterferometer.Count; i++)
         {
             warpgateDest = Data.GWInterferometer[i].warpGateDestination;
             angle = (double)Data.GWInterferometer[i].angle;
@@ -117,8 +133,14 @@ public class SensorSubsystemController
 
             vector = new Vector2((float)distX, (float)distY);
 
-            GWIData.Add(new WarpDetection(vector, signature));
-        }
-        
+            if (signature == GravitySignature.Planetoid)
+            {
+                GWIPlanetData.Add(new PlanetStruct(vector, signature));
+            }
+            else if(signature == GravitySignature.WarpGate){
+                GWIWarpData.Add(new WarpStruct(vector, signature, warpgateDest));
+            }
+
+        }      
     }
 }
