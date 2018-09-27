@@ -1,13 +1,14 @@
 using UnityEngine;
 
-public struct DetectedObject
+namespace Sandbox
 {
-    enum ObjectType
+    struct DetectedObject
     {
-        
+        GravitySignature signature;
+        SpaceMaterial material;
+        Vector2 position;
+        // velocity is 0 if only GWI data can be used
+        Vector2 velocity;
+        bool kepler;
     }
-
-    ObjectType type;
-    Vector2 position;
-    Vector2 velocity;
 }
