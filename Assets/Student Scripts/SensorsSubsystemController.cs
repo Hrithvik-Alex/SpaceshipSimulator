@@ -9,9 +9,9 @@ public class SensorSubsystemController
     //Structure
     public struct WarpDetection
     {
-        Vector2 vector;
+        public Vector2 vector;
 
-        GravitySignature finalSignature; 
+        public GravitySignature finalSignature; 
 
         public WarpDetection(Vector2 vector, GravitySignature signature)
         {
