@@ -69,6 +69,10 @@ public class SensorSubsystemController
         bool common = false;
         bool metal = false;
 
+        //empty lists
+        GWIWarpData.RemoveAll();
+        EMSData.RemoveAll();
+
         for (int i = 0; i < Data.EMSensor.Count; i++){
             EMSangle = (double)Data.EMSensor[i].angle;
             signalStrength = Data.EMSensor[i].signalStrength;
@@ -107,7 +111,6 @@ public class SensorSubsystemController
         float distance;
         double distX, distY;
         Vector2 vector;
-
 
 
         for (int i = 0; i < Data.GWInterferometer.Count; i++)
