@@ -24,7 +24,6 @@ public class DefenceSubsystemController
             return true;
         }
     }
-
     public Vector2 Asteroid(SubsystemReferences subsystemReferences) {
         int asteroidCount = subsystemReferences.Sensors.EMSData.Count;
         Vector2 closestAsteroid = subsystemReferences.Sensors.EMSData[0].pos;
@@ -35,17 +34,13 @@ public class DefenceSubsystemController
             }
         }
         return closestAsteroid;
-
     }
 
     public void DefenceUpdate(SubsystemReferences subsystemReferences, TurretControls turretControls) {
         //turretControls.aimTo = new Vector3 (0,1,1);
         turretControls.aimTo = Asteroid(subsystemReferences);
-        if (subsystemReferences.Sensors.EMSData.Count == 0) {
-            turretControls.isTriggerPulled = false;
-            Debug.Log("false");
-        } else {
-            turretControls.isTriggerPulled = true;
-        }
+        turretControls.FireTube1();
+        //turretControls.FireTube2();
+        //turretControls.FireTube3();
     }
-}
+ }
