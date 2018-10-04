@@ -7,22 +7,28 @@ using Sandbox;
 public class SensorSubsystemController
 {
 
+    /*
+    Structure for long range detections 
+    */
     public struct WarpStruct
     {
         public Vector2 vector;
         public String warpDest;
         public GravitySignature finalSignature;
 
-        public WarpStruct(Vector2 vector, GravitySignature signature, String dest)
+        
+        public WarpStruct(Vector2 vect, GravitySignature signature, String dest)
         {
             this.warpDest = dest;
-            this.vector = vector;
+            this.vector = vect;
             finalSignature = signature;
         }
     }
-
+    //can be accessed by other systems
     public List<WarpStruct> GWIWarpData = new List<WarpStruct>();
 
+
+    /*Structure for short range detection*/
     public struct EMSDetection
     {
         Vector2 pos;
@@ -106,15 +112,16 @@ public class SensorSubsystemController
 
         for (int i = 0; i < Data.GWInterferometer.Count; i++)
         {
-
+            //get data
             warpgateDest = Data.GWInterferometer[i].warpGateDestination;
             angle = (double)Data.GWInterferometer[i].angle;
             waveAmplitude = Data.GWInterferometer[i].waveAmplitude;
             signature = Data.GWInterferometer[i].signature;
 
+            //distance = G / waveAmp
             distance = ShipSensors.GConstant / waveAmplitude;
 
-
+            //distance for vectors
             distX = distance * Math.Cos(angle);
             distY = distance * Math.Sin(angle);
 
