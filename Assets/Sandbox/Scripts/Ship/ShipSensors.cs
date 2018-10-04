@@ -107,7 +107,7 @@ namespace Sandbox
                         radius = boxCollider.size.magnitude;
                     }
 
-                    EMS_Detection detection = new EMS_Detection(angle, waveAmplitude, velocity, radius, 0);
+                    EMS_Detection detection = new EMS_Detection(angle, waveAmplitude, velocity, radius, signature);
                     EMSensor.Add(detection);
                 }
             }
