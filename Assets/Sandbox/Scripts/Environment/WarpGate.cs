@@ -9,46 +9,27 @@ public class WarpGate : MonoBehaviour
 {
     [Header("Tunable")]
     public int gateIndex = -1;
+    public GalaxyMapNode DestinationGalaxyMapNode { get; private set; }
 
-    public event Action<WarpGate, Ship, string, int> OnWarpGateTriggered; //Triggering gate, triggering ship, destination GalaxyMapNode, destination WarpGate index
+    public event Action<WarpGate, Ship> OnWarpGateTriggered; //Triggering gate, triggering ship
 
     //Internal
     GameCore gameCore;
-    GalaxyMapVisual galaxyMap;
-
-    private void Start()
+    
+    public void Setup(GameCore parentGameCore)
     {
-        gameCore = FindObjectOfType<GameCore>();
-        galaxyMap = FindObjectOfType<GalaxyMapVisual>();
+        gameCore = parentGameCore;
+        DestinationGalaxyMapNode = gameCore.GalaxyMapVisual.FindDestinationNodeForWarpGate(this);
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    public void TriggerWarpGate(Ship triggeringShip)
     {
-        Ship triggeringShip = collision.gameObject.GetComponent<Ship>();
         if (triggeringShip != null)
-        {   
-            //Find relevant GalaxyMapEdge, if any
-            foreach(var edge in galaxyMap.Edges)
-            {
-                if(edge.nodeA.name == gameCore.CurrentSolarSystemName)
-                {
-                    if(edge.gateIndexA == gateIndex)
-                    {
-                        //We've found the edge we're attached to, trigger a warp to the opposite node+gate
-                        OnWarpGateTriggered?.Invoke(this, triggeringShip, edge.nodeB.name, edge.gateIndexB);
-                    }
-                } else if(edge.nodeB.name == gameCore.CurrentSolarSystemName)
-                {
-                    if(edge.gateIndexB == gateIndex)
-                    {
-                        //We've found the edge we're attached to, trigger a warp to the opposite node+gate
-                        OnWarpGateTriggered?.Invoke(this, triggeringShip, edge.nodeA.name, edge.gateIndexA);
-                    }
-                }
-            }
+        {
+            OnWarpGateTriggered?.Invoke(this, triggeringShip);
         }
     }
-
+    
     /*
     [ContextMenu("Manually trigger gate (find Ship)")] //You can right-click on a WarpGate component to manually trigger the jump
     private void DebugTrigger()

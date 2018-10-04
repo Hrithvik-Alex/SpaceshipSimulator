@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 [ExecuteInEditMode]
@@ -12,13 +13,13 @@ public class GalaxyMapEdge : MonoBehaviour
 
     [Header("References")]
     public GalaxyMapNode nodeA;
-    public int gateIndexA;
+    //public int gateIndexA;
 
     public GalaxyMapNode nodeB;
-    public int gateIndexB;
+    //public int gateIndexB;
 
     //Properties
-    public float EdgeCost { get { return edgeCost; } }
+    public float EdgeCost { get { return edgeCost; } set { edgeCost = value; } }
 
     //Internal
     SpriteRenderer spriteRenderer;
@@ -49,5 +50,10 @@ public class GalaxyMapEdge : MonoBehaviour
         {
             spriteRenderer.enabled = false;
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Handles.Label(transform.position + Vector3.up, EdgeCost.ToString());
     }
 }
