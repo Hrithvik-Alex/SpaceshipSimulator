@@ -7,14 +7,11 @@ using Sandbox;
 public class DefenceSubsystemController
 {
     public bool WillCrashIntoShip(SubsystemReferences subsystemReferences) {
-        Vector2 shipVelocityNorm = subsystemReferences.forward;
+        int shipVelocityNorm = subsystemReferences.forward;
         Vector2 shipVelocity = subsystemReferences.velocity;
         Vector2 shipPosition = subsystemReferences.currentShipPositionWithinGalaxyMapNode;
         int asteroidVelocityNorm = (subsystemReferences.Sensors.EMSData[0].vel).magnitude;
-        if (shipVelocityNorm == asteroidVelocityNorm || shipVelocityNorm == -asteroidVelocityNorm) {
-            return false;
-        }
-        float time = (shipPosition - subsystemReferences.Sensors.EMSData[0].pos)/(subsystemReferences.Sensors.EMSData[0].vel-shipVelocity).Normalize;
+        float time = (shipPosition - subsystemReferences.Sensors.EMSData[0].pos)/(subsystemReferences.Sensors.EMSData[0].vel-shipVelocity).magnitude;
         if (time < 0) {
             return false;
         } else {
