@@ -17,6 +17,46 @@ public class NavigationSubsystemController
 
     public void NavigationUpdate(SubsystemReferences SystemReferences, GalaxyMapData galaxyMapData)
     {
+
+        int n = galaxyMapData.nodeData.Length;
+        Dictionary<GalaxyMapNodeData, int> nodeToInt = new Dictionary<GalaxyMapNodeData, int>();
+        for(int i = 0; i < n; i ++)
+        {
+            nodeToInt[galaxyMapData.nodeData[i]] = i;
+        }
+
+        GalaxyMapEdgeData[] edges = galaxyMapData.edgeData;
+        int[,] adj = new int[1005,1005];
+
+        galaxyMapNodeData root = galaxyMapData.nodeData[0];
+
+        foreach (GalaxyMapEdgeData data in edges)
+        {
+            int A = data.nodeA, B = data.nodeB;
+            data.edgeCost = Mathf.Pow((A.galacticPosition.x - B.galacticPosition.x), 2) - Mathf.Pow((A.galacticPosition.y - B.galacticPosition.y), 2);
+            adj[nodeToInt[A]][nodeToInt[B]] = data.edgeCost;
+        }
+
+        float dist = new float[105];
+        bool vis = new bool[105];
+        for(int i = 0; i < 105; i ++)
+        {
+            dist[i] = 999999;
+        }
+        List<Tuple<float,int>> edgeList = new List<Tuple<float, int>>(); // cost, id of next node
+
+        edgeList.Add(new Tuple(edges[0].edgeCost, edges[0].nodeB));
+
+        /*while(edgeList.size() > 0)
+        {
+            float minEdge = edgeList[0];
+
+
+
+            
+        }*/
+
+
         if (!visitedGalaxies.Contains(SystemReferences.currentGalaxyMapNodeName))
         {
             visitedGalaxies.Add(SystemReferences.currentGalaxyMapNodeName);
