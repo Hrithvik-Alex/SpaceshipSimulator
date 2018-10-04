@@ -51,8 +51,8 @@ public class PropulsionSubsystemController
 
         // Correct for negative angles
         // Dirtheta in default position fluctuates
-        if (curtheta < 0) { curtheta = (2 * Math.PI + curtheta); }
-        if (targettheta < 0) { targettheta = (2 * Math.PI + targettheta); }
+        //if (curtheta < 0) { curtheta = (2 * Math.PI + curtheta); }
+        //if (targettheta < 0) { targettheta = (2 * Math.PI + targettheta); }
 
         Debug.Log("Curtheta: " + curtheta);
         Debug.Log("Targettheta: " + targettheta);
