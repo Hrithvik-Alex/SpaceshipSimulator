@@ -39,7 +39,8 @@ public class DefenceSubsystemController
     public void DefenceUpdate(SubsystemReferences subsystemReferences, TurretControls turretControls) {
         //turretControls.aimTo = new Vector3 (0,1,1);
         turretControls.aimTo = Asteroid(subsystemReferences);
-        turretControls.FireTube1();
+        Debug.Log (subsystemReferences.Sensors.EMSData.Count);
+        turretControls.FireTube0();
         //turretControls.FireTube2();
         //turretControls.FireTube3();
     }
