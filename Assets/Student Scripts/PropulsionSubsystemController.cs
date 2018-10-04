@@ -6,7 +6,7 @@ using Sandbox;
 public class PropulsionSubsystemController
 {
     float THRUST_STRENGTH = 0f;
-    float TURN_STRENGTH = 50;
+    float TURN_STRENGTH = 100;
     public Vector2 targetVector = Vector2.down;
     public Vector2 originalVector = Vector2.right;
     public bool engineOn = true;
@@ -31,8 +31,17 @@ public class PropulsionSubsystemController
         thrusterControls.portAftThrust = 0;
     }
 
+    private void stopRotate(ThrusterControls thrusterControls) 
+    {
+        thrusterControls.starboardBowThrust = 0;
+        thrusterControls.portAftThrust = 0;
+        thrusterControls.portBowThrust = 0;
+        thrusterControls.starboardAftThrust = 0;
+    }
+
     public void rotateToVector2(Vector2 target, Vector2 cur, ThrusterControls thrusterControls)
     {
+        if (targetVector == Vector2.zero) return;
         double otheta = Math.Atan((double)originalVector.y / (double)originalVector.x);
         double curtheta = Math.Atan((double)cur.y / (double)cur.x);
         double targettheta = Math.Atan((double)target.y / (double)target.x);
@@ -84,7 +93,7 @@ public class PropulsionSubsystemController
             }
         }
         // Decelerate once the halfway point is passed
-        if (deltatheta < deltathetao/2 && (Math.Abs(deltatheta - deltathetao)>0.01))
+        if (deltatheta < deltathetao/2 )
         {
             Debug.Log("Slowing down rotation");
             if (lr == -1)
@@ -97,6 +106,12 @@ public class PropulsionSubsystemController
                 //Rotate right
                 rotateRight(thrusterControls, TURN_STRENGTH);
             }
+        }
+        if(Math.Abs(curtheta - targettheta) < 0.05) 
+        {
+            Debug.Log("STOPPING ROTATE");
+            targetVector = Vector2.zero;
+            stopRotate(thrusterControls);
         }
     }
 
