@@ -31,8 +31,8 @@ public class SensorSubsystemController
     /*Structure for short range detection*/
     public struct EMSDetection
     {
-        Vector2 pos;
-        Vector2 vel;
+        public Vector2 pos;
+        public Vector2 vel;
         int sig;
         bool water;
         bool common;
