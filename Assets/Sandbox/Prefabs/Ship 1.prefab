@@ -518,7 +518,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4361242210456512}
   - component: {fileID: 50527740338706464}
-  - component: {fileID: 61932996812220236}
+  - component: {fileID: 58963417335614314}
   - component: {fileID: 114237685477824566}
   - component: {fileID: 114990403307954234}
   - component: {fileID: 114157767893573066}
@@ -1028,8 +1028,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!61 &61932996812220236
-BoxCollider2D:
+--- !u!58 &58963417335614314
+CircleCollider2D:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
@@ -1040,19 +1040,9 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.024939299, y: 0.15555012}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
+  m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Size: {x: 1.9989572, y: 2.5648057}
-  m_EdgeRadius: 0
+  m_Radius: 1.75
 --- !u!114 &114065588334793490
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1090,8 +1080,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a547ec53965c36b41a4b8d4822efde88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainThrustLimit: 100
-  maneuverThrustLimit: 50
+  mainThrustLimit: 1000
+  maneuverThrustLimit: 500
   maxUFODriveSpeed: 50
   starboardAftThruster: {fileID: 114515986254849690}
   portAftThruster: {fileID: 114816285980240354}

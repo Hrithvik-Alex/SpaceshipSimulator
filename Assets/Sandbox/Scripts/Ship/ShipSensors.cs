@@ -9,6 +9,7 @@ namespace Sandbox
 {
     public class ShipSensors : MonoBehaviour
     {
+        GameCore gameCore;
         GalaxyMapVisual galaxyMap;
 
         public const float GConstant = 1f;
@@ -22,6 +23,7 @@ namespace Sandbox
 
         private void Start()
         {
+            gameCore = GetComponentInParent<GameCore>();
             galaxyMap = FindObjectOfType<GalaxyMapVisual>();    
         }
 
@@ -38,9 +40,11 @@ namespace Sandbox
             {
                 foreach (Transform warpGate in WarpGatesParent.transform)
                 {
-                    Vector3 positionDiff = warpGate.transform.position - transform.position;
-                    float angle = Mathf.Atan2(positionDiff.y, positionDiff.x);
-                    float waveAmplitude = 1f / positionDiff.magnitude;
+                    Vector3 noiseOffset = Random.insideUnitCircle * gameCore.GWIInterferenceScale;
+                    Vector3 positionDiff = (warpGate.transform.position + noiseOffset) - transform.position;
+                    //float angle = Mathf.Atan2(positionDiff.y, positionDiff.x);
+                    float angle = Vector3.SignedAngle(Vector3.right, positionDiff, Vector3.forward);
+                    float waveAmplitude = ShipSensors.GConstant / positionDiff.magnitude;
 
                     WarpGate gate = warpGate.GetComponent<WarpGate>();
                     GalaxyMapNode destinationNode = galaxyMap.FindDestinationNodeForWarpGate(gate);
@@ -57,9 +61,11 @@ namespace Sandbox
             {
                 foreach (Transform largeBody in LBodiesParent.transform)
                 {
-                    Vector3 positionDiff = largeBody.transform.position - transform.position;
-                    float angle = Mathf.Atan2(positionDiff.y, positionDiff.x);
-                    float waveAmplitude = 1f / positionDiff.magnitude;
+                    Vector3 noiseOffset = Random.insideUnitCircle * gameCore.GWIInterferenceScale;
+                    Vector3 positionDiff = (largeBody.transform.position + noiseOffset) - transform.position;
+                    //float angle = Mathf.Atan2(positionDiff.y, positionDiff.x);
+                    float angle = Vector3.SignedAngle(Vector3.right, positionDiff, Vector3.forward);
+                    float waveAmplitude = ShipSensors.GConstant / positionDiff.magnitude;
                     GravitySignature signature = largeBody.GetComponent<SpaceObject>().gravitySignature;
                     GWInterferometer.Add(new GWI_Detection(angle, waveAmplitude, signature));
                 }
@@ -79,15 +85,29 @@ namespace Sandbox
             Collider2D[] hazardColliders = Physics2D.OverlapCircleAll(transform.position, EMSRange, EMSMask);
             foreach (Collider2D col in hazardColliders)
             {
-                if (!col.gameObject.CompareTag("Player") && !col.gameObject.CompareTag("Missile"))
+                var spaceObject = col.GetComponent<SpaceObject>();
+                if (spaceObject != null && !col.gameObject.CompareTag("Player") && !col.gameObject.CompareTag("Missile"))
                 {
-                    Vector3 positionDiff = col.transform.position - transform.position;
+                    Vector3 noiseOffset = Random.insideUnitCircle * gameCore.EMSInterferenceScale;
+                    Vector3 positionDiff = (col.transform.position + noiseOffset) - transform.position;
                     float angle = Mathf.Atan2(positionDiff.y, positionDiff.x);
                     float waveAmplitude = 1f / positionDiff.magnitude;
-                    int signature = col.GetComponent<SpaceObject>().MaterialSignature;
+                    int signature = spaceObject.MaterialSignature;
                     Rigidbody2D rb2D = col.GetComponent<Rigidbody2D>();
                     Vector2 velocity = new Vector2(rb2D.velocity.x, rb2D.velocity.y);
-                    EMS_Detection detection = new EMS_Detection(angle, waveAmplitude, velocity, 0);
+                    //Radius
+                    float radius = -1f;
+                    if(col is CircleCollider2D)
+                    {
+                        CircleCollider2D circleCollider = col as CircleCollider2D;
+                        radius = circleCollider.radius;
+                    } else if(col is BoxCollider2D)
+                    {
+                        BoxCollider2D boxCollider = col as BoxCollider2D;
+                        radius = boxCollider.size.magnitude;
+                    }
+
+                    EMS_Detection detection = new EMS_Detection(angle, waveAmplitude, velocity, radius, 0);
                     EMSensor.Add(detection);
                 }
             }
@@ -126,13 +146,15 @@ namespace Sandbox
         public float angle { get; private set; }
         public float signalStrength { get; private set; }
         public Vector2 velocity { get; private set; }
+        public float radius { get; private set; }
         public int materialSignature { get; private set; }
 
-        public EMS_Detection(float angle0, float signalStrength0, Vector2 velocity0, int signature0)
+        public EMS_Detection(float angle0, float signalStrength0, Vector2 velocity0, float radius, int signature0)
         {
             angle = angle0;
             signalStrength = signalStrength0;
             velocity = velocity0;
+            this.radius = radius;
             materialSignature = signature0;
         }
     }

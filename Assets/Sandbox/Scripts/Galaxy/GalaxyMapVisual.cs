@@ -2,69 +2,100 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GalaxyMapVisual : MonoBehaviour {
+public class GalaxyMapVisual : MonoBehaviour
+{
+    GameCore gameCore;
 
-    GalaxyMapNode[] nodes;
-    GalaxyMapEdge[] edges;
+    public Dictionary<string, GalaxyMapNode> Nodes { get; private set; } = new Dictionary<string, GalaxyMapNode>();
+    public GalaxyMapEdge[] Edges { get; private set; }
 
-    public GalaxyMapNode[] Nodes { get { return nodes; } }
-    public GalaxyMapEdge[] Edges { get { return edges; } }
+    public GalaxyMapData GalaxyMapData { get; private set; }
+    
+    public void Setup(GameCore parentGameCore, int galaxySeed)
+    {
+        gameCore = parentGameCore;
 
-	// Use this for initialization
-	void Awake () {
-        nodes = GetComponentsInChildren<GalaxyMapNode>();
-        edges = GetComponentsInChildren<GalaxyMapEdge>();
-	}
-	
-	// Update is called once per frame
-	void Update ()
+        GalaxyMapNode[] foundNodes = GetComponentsInChildren<GalaxyMapNode>();
+        Edges = GetComponentsInChildren<GalaxyMapEdge>();
+
+        //Inform the nodes about their relevant edges
+        foreach (var node in foundNodes)
+        {
+            Nodes.Add(node.name, node);
+
+            foreach (var edge in Edges)
+            {
+                if (edge.nodeA == node || edge.nodeB == node)
+                {
+                    node.edges.Add(edge);
+                }
+            }
+        }
+
+        //Randomize edge weights
+        if(gameCore.SimMode == GameCore.SimulationMode.C && galaxySeed != 0)
+        {   
+            Random.InitState(galaxySeed);
+            foreach(var edge in Edges)
+            {
+                edge.EdgeCost = Random.Range(1, 21);
+            }
+        }
+
+        GalaxyMapData = GenerateGalaxyMapData();
+    }
+
+    // Update is called once per frame
+    void Update ()
     {
 		
 	}
 
     public GalaxyMapNode GetDefaultNode()
     {   
-        foreach(var node in Nodes)
+        foreach(var node in Nodes.Values)
         {
             if (node.IsDefaultLocation)
                 return node;
         }
 
-        //By default, return the first node (though this is just to avoid errors, there really should be a default set)
-        return nodes[0];
+        return null;
     }
 
     //Copy Unity-side hierarchy information over to "student safe" data containers
     public GalaxyMapData GenerateGalaxyMapData()
     {
         //Data copies for GalaxyMapNodes
-        GalaxyMapNodeData[] nodeDataToReturn = new GalaxyMapNodeData[nodes.Length];
-        for(int i = 0; i < nodes.Length; i++)
+        var nodeDataToReturn = new List<GalaxyMapNodeData>();
+        foreach(var node in Nodes.Values)
         {
-            nodeDataToReturn[i] = new GalaxyMapNodeData();
-            nodeDataToReturn[i].systemName = nodes[i].name;
-            nodeDataToReturn[i].galacticPosition = nodes[i].transform.position;            
+            var newNodeData = new GalaxyMapNodeData();
+            newNodeData.systemName = node.name;
+            newNodeData.galacticPosition = node.transform.position;
+            nodeDataToReturn.Add(newNodeData);
         }
 
         //Data copies for GalaxyMapEdges
-        GalaxyMapEdgeData[] edgeDataToReturn = new GalaxyMapEdgeData[edges.Length];
-        for(int i = 0; i < edges.Length; i++)
+        var edgeDataToReturn = new List<GalaxyMapEdgeData>();
+        foreach(var edge in Edges)
         {
-            edgeDataToReturn[i] = new GalaxyMapEdgeData();
-            edgeDataToReturn[i].edgeCost = edges[i].EdgeCost;
+            var newEdgeData = new GalaxyMapEdgeData();
+            newEdgeData.edgeCost = edge.EdgeCost;
             
-            for(int n = 0; n < nodeDataToReturn.Length; n++)
+            foreach(var nodeData in nodeDataToReturn)
             {
-                if(nodeDataToReturn[n].systemName == edges[i].nodeA.name)
+                if(nodeData.systemName == edge.nodeA.name)
                 {
-                    edgeDataToReturn[i].nodeA = nodeDataToReturn[n];
+                    newEdgeData.nodeA = nodeData;
                 }
 
-                if (nodeDataToReturn[n].systemName == edges[i].nodeB.name)
+                if (nodeData.systemName == edge.nodeB.name)
                 {
-                    edgeDataToReturn[i].nodeB = nodeDataToReturn[n];
+                    newEdgeData.nodeB = nodeData;
                 }
             }
+
+            edgeDataToReturn.Add(newEdgeData);
         }
 
         foreach(var node in nodeDataToReturn)
@@ -80,44 +111,26 @@ public class GalaxyMapVisual : MonoBehaviour {
 
         //Package the data up and return it to the caller
         GalaxyMapData dataToReturn = new GalaxyMapData();
-        dataToReturn.nodeData = nodeDataToReturn;
-        dataToReturn.edgeData = edgeDataToReturn;
+        dataToReturn.nodeData = nodeDataToReturn.ToArray();
+        dataToReturn.edgeData = edgeDataToReturn.ToArray();
         return dataToReturn;
     }
-
-    public GalaxyMapNode FindNodeNamed(string nodeName)
-    {
-        foreach(var node in Nodes)
-        {
-            if (node.name == nodeName)
-                return node;
-        }
-
-        return null;
-    }
-
+    
     public GalaxyMapNode FindDestinationNodeForWarpGate(WarpGate departureGate)
     {
-        GameCore gameCore = FindObjectOfType<GameCore>();
-
-        foreach (var edge in Edges)
+        var localEdges = Nodes[gameCore.CurrentSolarSystemName].edges;
+        int gateSiblingIndex = departureGate.transform.GetSiblingIndex();
+        if(gateSiblingIndex < localEdges.Count)
         {
-            if (edge.nodeA.name == gameCore.CurrentSolarSystemName)
-            {
-                if (edge.gateIndexA == departureGate.gateIndex)
-                {
-                    return edge.nodeB;
-                }
-            }
-            else if (edge.nodeB.name == gameCore.CurrentSolarSystemName)
-            {
-                if (edge.gateIndexB == departureGate.gateIndex)
-                {
-                    return edge.nodeA;
-                }
-            }
-        }
+            GalaxyMapEdge targetEdge = localEdges[gateSiblingIndex];
+            if (targetEdge.nodeA.name == gameCore.CurrentSolarSystemName)
+                return targetEdge.nodeB;
+            else
+                return targetEdge.nodeA;
 
-        return null;
+        } else
+        {
+            return null;
+        }
     }
 }

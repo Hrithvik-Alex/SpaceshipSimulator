@@ -22,7 +22,9 @@ public class Asteroid : MonoBehaviour {
         rb = GetComponent<Rigidbody2D>();
         pos = new Vector2(0, 0);
         dest = new Vector2(0, 0);
-	}
+
+        rb.angularVelocity = Random.Range(-35, 35);
+    }
 	
     public void Launch()
     {
@@ -47,13 +49,15 @@ public class Asteroid : MonoBehaviour {
         transform.position = pos;
         rb.velocity = velocity;
 
+        
+
         deployDistance = Vector3.Distance(pos, dest);
     }
 
-    void ReturnToPool()
+    bool ReturnToPool()
     {
         rb.velocity = Vector2.zero;
-        SimplePool.Despawn(gameObject);
+        return SimplePool.Despawn(gameObject);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -62,7 +66,11 @@ public class Asteroid : MonoBehaviour {
         {
             GameObject explosion = Instantiate(explosionEffect, transform.position, transform.rotation);
             Destroy(explosion, 0.6f);
-            ReturnToPool();
+            bool success = ReturnToPool();
+            if (!success)
+            {
+                Destroy(gameObject);
+            }
         }
     }
 
