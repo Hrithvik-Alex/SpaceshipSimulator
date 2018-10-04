@@ -22,12 +22,12 @@ public class DefenceSubsystemController
         }
     }
     public float DistanceFromShip(SubsystemReferences subsystemReferences) {
-        float distance = (SubsystemRefences.SensorsUpdate.pos-shipPosition).magnitude;
+        float distance = (SubsystemReferences.SensorsUpdate.pos-shipPosition).magnitude;
         return distance;
     }
 
     public Vector2 missileAim() {
-        turretControls.aimTo = DefenceSubsystemController,.pos;
+        turretControls.aimTo = DefenceSubsystemController.pos;
     }
 
     public void DefenceUpdate(SubsystemReferences subsystemReferences, TurretControls turretControls) {
