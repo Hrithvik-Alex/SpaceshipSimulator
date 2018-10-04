@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
+[SelectionBase]
 public class GalaxyMapNode : MonoBehaviour
 {
     [Header("Tunables")]
@@ -10,13 +12,10 @@ public class GalaxyMapNode : MonoBehaviour
 
     public bool IsDefaultLocation { get { return isDefaultLocation; } }
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    public List<GalaxyMapEdge> edges = new List<GalaxyMapEdge>();
+
+    private void OnDrawGizmos()
+    {   
+        Handles.Label(transform.position + Vector3.up, this.gameObject.name);
+    }
 }

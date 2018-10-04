@@ -104,17 +104,19 @@ public static class SimplePool
     }
 
 
-    static public void Despawn(GameObject obj)
+    static public bool Despawn(GameObject obj)
     {
         PoolMember pm = obj.GetComponent<PoolMember>();
         if (pm == null)
         {
-            Debug.Log("Object '" + obj.name + "' wasn't spawned from a pool. Ignoring.");
+            Debug.Log("Object '" + obj.name + "' wasn't spawned from a pool.");
+            return false;
             //GameObject.Destroy(obj);
         }
         else
         {
             pm.myPool.Despawn(obj);
+            return true;
         }
     }
 

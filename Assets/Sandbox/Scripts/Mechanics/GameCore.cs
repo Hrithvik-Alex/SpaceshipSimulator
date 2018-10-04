@@ -15,6 +15,12 @@ public class GameCore : MonoBehaviour
     [Header("Tunable")]
     [SerializeField]
     SimulationMode simulationMode = SimulationMode.A;
+    [SerializeField]
+    int galaxySeed = 0; //Pick any integer value to set the random generation seed. Used for galaxy edge weights.
+    [SerializeField]
+    float emsInterferenceScale = 0f;
+    [SerializeField]
+    float gwiInterferenceScale = 0f;
     
     [Header("References")]
     [SerializeField]
@@ -28,13 +34,15 @@ public class GameCore : MonoBehaviour
     [SerializeField]
     GameObject missionAccomplishedPanelPrefab;
         
-    GalaxyMapVisual galaxyMapVisual;
-    GalaxyMapCamera galaxyMapCamera;
+    public GalaxyMapVisual GalaxyMapVisual { get; private set; }
+    GalaxyMapCamera GalaxyMapCamera;
 
     //Properties
     public string CurrentSolarSystemName { get { return currentSolarSystemName; } }
     public static Transform DynamicObjectsRoot;
     public SimulationMode SimMode { get { return simulationMode; } }
+    public float EMSInterferenceScale { get { return emsInterferenceScale; } }
+    public float GWIInterferenceScale { get { return gwiInterferenceScale; } }
 
     //Internal
     bool isHelpVisible = false;
@@ -53,9 +61,6 @@ public class GameCore : MonoBehaviour
     // Use this for initialization
     IEnumerator Start()
     {
-        //GalaxyMapGenerator generator = new GalaxyMapGenerator();
-        //generator.GenerateStarMap();
-
         switch (simulationMode)
         {
             case SimulationMode.A:
@@ -68,13 +73,15 @@ public class GameCore : MonoBehaviour
                 yield return LoadGalaxyMapRoutine("GalaxyMapC");
                 break;
         }
-        
-        string startingNodeName = galaxyMapVisual.GetDefaultNode().name;
-        yield return LoadSolarSystemSceneRoutine(startingNodeName);
+
+        GalaxyMapNode defaultNode = GalaxyMapVisual.GetDefaultNode();
+        if (defaultNode == null)
+            defaultNode = FindObjectOfType<GalaxyMapNode>();
+        yield return LoadSolarSystemSceneRoutine(defaultNode.name);
 
         ship = Instantiate(shipPrefab, transform).GetComponent<Ship>();
-        ship.galaxyMapData = galaxyMapVisual.GenerateGalaxyMapData();
-        ship.SetCurrentSolarSystem(startingNodeName);
+        ship.Setup(this);
+        
         StartingLocation startingLocation = FindObjectOfType<StartingLocation>();
 
         externalCamera = Instantiate(externalCameraPrefab, transform).GetComponent<ExternalCamera>();
@@ -108,7 +115,7 @@ public class GameCore : MonoBehaviour
         //Turn the galaxy map camera on/off
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            galaxyMapCamera.gameObject.SetActive(!galaxyMapCamera.gameObject.activeSelf);
+            GalaxyMapCamera.gameObject.SetActive(!GalaxyMapCamera.gameObject.activeSelf);
         }
     }
 
@@ -116,9 +123,11 @@ public class GameCore : MonoBehaviour
     {
         yield return SceneManager.LoadSceneAsync("Sandbox/Scenes/GalaxyMaps/" + galaxyMapName, LoadSceneMode.Additive);
 
-        galaxyMapVisual = FindObjectOfType<GalaxyMapVisual>();
-        galaxyMapCamera = FindObjectOfType<GalaxyMapCamera>();
-        galaxyMapCamera.gameObject.SetActive(false);
+        GalaxyMapVisual = FindObjectOfType<GalaxyMapVisual>();
+        GalaxyMapVisual.Setup(this, galaxySeed);
+
+        GalaxyMapCamera = FindObjectOfType<GalaxyMapCamera>();
+        GalaxyMapCamera.gameObject.SetActive(false);
     }
 
     IEnumerator UnloadCurrentSolarSystemSceneRoutine()
@@ -135,74 +144,55 @@ public class GameCore : MonoBehaviour
         WarpGate[] warpGates = FindObjectsOfType<WarpGate>();
         foreach (var gate in warpGates)
         {
+            gate.Setup(this);
             gate.OnWarpGateTriggered += HandleWarpGateTriggered;
         }
     }
 
-    private void HandleWarpGateTriggered(WarpGate triggeredGate, Ship triggeringShip, string destinationGalaxyMapNodeName, int destinationWarpGateIndex)
+    bool isTransitioningScenes = false;
+    private void HandleWarpGateTriggered(WarpGate triggeredGate, Ship triggeringShip)
     {
         Debug.Log("HandleWarpGateTriggered");
-
-        if (String.IsNullOrEmpty(destinationGalaxyMapNodeName))
+        
+        if (!isTransitioningScenes)
         {
-            Debug.LogError("triggeredGate.destinationSolarSystem is null or empty");
-            return;
-        } 
-
-        if(destinationWarpGateIndex < 0)
-        {
-            Debug.LogError("triggeredGate.destinationWarpGateIndex < 0");
-            return;
+            isTransitioningScenes = true;
+            StartCoroutine(SolarSystemSwapRoutine(triggeredGate.DestinationGalaxyMapNode.name));
         }
-
-        StartCoroutine(SolarSystemSwapRoutine(destinationGalaxyMapNodeName, destinationWarpGateIndex));
+            
     }
 
-    IEnumerator SolarSystemSwapRoutine(string destinationGalaxyMapNodeName, int destinationWarpGateIndex)
+    IEnumerator SolarSystemSwapRoutine(string destinationGalaxyMapNodeName)
     {
         string startingSolarSystemName = currentSolarSystemName;
             
         yield return UnloadCurrentSolarSystemSceneRoutine();
         yield return LoadSolarSystemSceneRoutine(destinationGalaxyMapNodeName);
 
-        ship.SetCurrentSolarSystem(destinationGalaxyMapNodeName);
+        currentSolarSystemName = destinationGalaxyMapNodeName;
 
         //Move ship on top of arrival gate
+        ship.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+        ship.GetComponent<Rigidbody2D>().angularVelocity = 0f;
         foreach (var gate in FindObjectsOfType<WarpGate>())
         {
-            if (gate.gateIndex == destinationWarpGateIndex)
+            GalaxyMapNode sourceNode = GalaxyMapVisual.FindDestinationNodeForWarpGate(gate);
+            if (sourceNode != null && sourceNode.name == startingSolarSystemName)
             {
                 ship.transform.position = gate.transform.position + Vector3.right * 10f;
-                ship.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-                ship.GetComponent<Rigidbody2D>().angularVelocity = 0f;
+                
             }
         }
+
+        isTransitioningScenes = false;
     }
-    /*
-    public static GalaxyMap TestGenerateGalaxyMap(int numberOfStars)
-    {
-        GalaxyMap galaxyMap = new GalaxyMap();
-
-        //int numberOfStars = 10;
-        //Vector2 galaxySize = new Vector3(100f, 50f); //Dimensions: Width X Height
-
-        //float halfWidth = galaxySize.x * 0.5f;
-        //float halfHeight = galaxySize.y * 0.5f;
-
-        //Hand-crafted galaxy map for the time being
-        galaxyMap.starList.Add(new GalaxyStar("Sol", new Vector2(-50f, 50f)));
-        galaxyMap.starList.Add(new GalaxyStar("Alpha Centauri", new Vector2(0f, 5f)));
-        galaxyMap.starList.Add(new GalaxyStar("Kepler 438", new Vector2(50f, -25f)));
-
-        return galaxyMap;
-    }
-    */
+    
     public void TriggerVictory()
     {
         if (isGameOver)
             return;
 
-        Debug.Log("You Win!");
+        Debug.Log("Mission Accomplished!");
         isGameOver = true;
         Time.timeScale = 0f;
 
@@ -210,12 +200,13 @@ public class GameCore : MonoBehaviour
         victoryPanel.SetTitleText("Mission Accomplished!");
         victoryPanel.SetBodyText("The ship has successfully reached the new interstellar colony.");
     }
-    public void TriggerLoss()
+
+    public void TriggerDefeat()
     {
         if (isGameOver)
             return;
 
-        Debug.Log("You Lose!");
+        Debug.Log("Mission Failed!");
         isGameOver = true;
         Time.timeScale = 0f;
 

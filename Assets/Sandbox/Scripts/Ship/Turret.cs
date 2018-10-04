@@ -8,60 +8,102 @@ using Sandbox;
 
 public class Turret : MonoBehaviour
 {
-    public TurretControls fromDefence = new TurretControls();
+    //Properties
+    public TurretControls TurretControlInputs { get; private set; }
+
+    [Header("References")]
     public GameObject TurretObj;
     public GameObject missilePrefab;
     public float turretAngle;
 
-    float cooldown = 0f;
-    float cooldownDuration = 0.5f;
+    //Internal
+    float cooldownDuration = 3f;
+    public float Tube0Cooldown { get; private set; }
+    public float Tube1Cooldown { get; private set; }
+    public float Tube2Cooldown { get; private set; }
+    public float Tube3Cooldown { get; private set; }
+
 
     void Start()
     {
         SimplePool.Preload(missilePrefab, 4);
-        //StartFiring();
+
+        TurretControlInputs = new TurretControls(this);
+
+        TurretControlInputs.OnTube0Fired += HandleTube0Fired;
+        TurretControlInputs.OnTube1Fired += HandleTube1Fired;
+        TurretControlInputs.OnTube2Fired += HandleTube2Fired;
+        TurretControlInputs.OnTube3Fired += HandleTube3Fired;
     }
 
-    public void StartFiring()
+    private void Update()
     {
-        InvokeRepeating("Aim", 1, 1f);
+        //Cooldowns
+        Tube0Cooldown = Mathf.Max(0f, Tube0Cooldown - Time.deltaTime);
+        Tube1Cooldown = Mathf.Max(0f, Tube1Cooldown - Time.deltaTime);
+        Tube2Cooldown = Mathf.Max(0f, Tube2Cooldown - Time.deltaTime);
+        Tube3Cooldown = Mathf.Max(0f, Tube3Cooldown - Time.deltaTime);
     }
 
     void FixedUpdate()
     {
-        if (fromDefence.aimTo != null)
+        if (TurretControlInputs.aimTo != null)
         {
-            turretAngle = Mathf.Atan2(fromDefence.aimTo.y - TurretObj.transform.position.y, fromDefence.aimTo.x - TurretObj.transform.position.x) * Mathf.Rad2Deg;
+            turretAngle = Mathf.Atan2(TurretControlInputs.aimTo.y - TurretObj.transform.position.y, TurretControlInputs.aimTo.x - TurretObj.transform.position.x) * Mathf.Rad2Deg;
             turretAngle -= 90;
             TurretObj.transform.localRotation = Quaternion.Euler(0, 0, turretAngle + 90);
-            //Debug.Log(fromDefence.aimTo);
-            
         }
         else
         {
             return;
         }
-
-        cooldown = Mathf.Max(0f, cooldown - Time.fixedDeltaTime);
-        fromDefence.cooldownRemaining = cooldown; //Report the cooldown back to the subsystems
-        if (fromDefence.isTriggerPulled)
-        {
-            if(cooldown <= 0f)
-            {
-                FireMissile(fromDefence.aimTo, turretAngle);
-                cooldown = cooldownDuration;
-            }
-        }
     }
 
     void FireMissile(Vector3 deployPos, float turretAngle)
-    {
-        float deployDist = Vector3.Distance(deployPos, TurretObj.transform.position);
-        GameObject firedMissile = SimplePool.Spawn(missilePrefab, TurretObj.transform.position, Quaternion.Euler(0, 0, turretAngle));
-        //firedMissile.transform.SetParent(GameCore.DynamicObjectsRoot); //Keeps the hierarchy tidy
-        Rigidbody2D missileRb = firedMissile.GetComponent<Rigidbody2D>();
+    {   
+        GameObject firedMissile = SimplePool.Spawn(missilePrefab, TurretObj.transform.position, TurretObj.transform.rotation);
+        firedMissile.transform.SetParent(GameCore.DynamicObjectsRoot); //Keeps the hierarchy tidy        
+
         Missile missileScript = firedMissile.GetComponent<Missile>();
         missileScript.LockOn();
-        missileRb.velocity = Ship.missileSpeed * firedMissile.transform.up;
+
+        Rigidbody2D missileRb = firedMissile.GetComponent<Rigidbody2D>();
+        missileRb.velocity = Ship.missileSpeed * firedMissile.transform.right;
+    }
+
+    private void HandleTube0Fired()
+    {
+        if (Tube0Cooldown <= 0)
+        {
+            FireMissile(TurretObj.transform.position, Vector2.SignedAngle(Vector2.right, TurretControlInputs.aimTo));
+            Tube0Cooldown = cooldownDuration;
+        }
+    }
+
+    private void HandleTube1Fired()
+    {
+        if (Tube1Cooldown <= 0)
+        {
+            FireMissile(TurretObj.transform.position, Vector2.SignedAngle(Vector2.right, TurretControlInputs.aimTo));
+            Tube1Cooldown = cooldownDuration;
+        }
+    }
+
+    private void HandleTube2Fired()
+    {
+        if (Tube2Cooldown <= 0)
+        {
+            FireMissile(TurretObj.transform.position, Vector2.SignedAngle(Vector2.right, TurretControlInputs.aimTo));
+            Tube2Cooldown = cooldownDuration;
+        }
+    }
+
+    private void HandleTube3Fired()
+    {
+        if (Tube3Cooldown <= 0)
+        {
+            FireMissile(TurretObj.transform.position, Vector2.SignedAngle(Vector2.right, TurretControlInputs.aimTo));
+            Tube3Cooldown = cooldownDuration;
+        }
     }
 }
